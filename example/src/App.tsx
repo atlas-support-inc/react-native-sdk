@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AtlasSupportWidget, watchAtlasSupportStats } from './atlas';
@@ -11,10 +11,11 @@ function HomeScreenOptions({ navigation }: any) {
   React.useEffect(
     () =>
       watchAtlasSupportStats((stats) => {
-        const unread = stats.conversations.filter((c) => c.unread > 0);
-        if (!unread.length) return;
-        if (unread.length > 1) setNewMessages(unread.length);
-        else setNewMessages(unread[0]?.unread || 0);
+        const unreadTotal = stats.conversations.reduce(
+          (total, c) => total + c.unread,
+          0
+        );
+        setNewMessages(unreadTotal);
       }),
     []
   );

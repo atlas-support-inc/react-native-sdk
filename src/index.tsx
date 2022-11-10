@@ -1,87 +1,29 @@
 import * as React from 'react';
-import { View, ViewProps } from 'react-native';
-import { WebView } from 'react-native-webview';
-import { ATLAS_WIDGET_BASE_URL } from './config';
-
-const buildWidgetUrl = (
-  appId: string,
-  userId: string,
-  userHash: string,
-  userName: string,
-  userEmail: string
-) =>
-  `${ATLAS_WIDGET_BASE_URL}?appId=${appId}&userId=${userId}&userHash=${userHash}&userName=${userName}&userEmail=${userEmail}`;
-
-export function AtlasSupportWidget(props: AtlasSupportWidgetProps) {
-  const {
-    appId,
-    userId = '',
-    userHash = '',
-    userEmail = '',
-    userName = '',
-    ...viewProps
-  } = props;
-
-  const webViewSource = React.useMemo(
-    () => ({
-      uri: buildWidgetUrl(appId, userId, userHash, userName, userEmail),
-    }),
-    [appId, userId, userHash, userName, userEmail]
-  );
-
-  return (
-    <View {...viewProps}>
-      <WebView source={webViewSource} />
-    </View>
-  );
-}
-
-const Widget = AtlasSupportWidget;
-
-export function watchAtlasSupportStats(
-  appId: string,
-  identity: AtlasSupportIdentity,
-  listener: (stats: AtlasSupportStats) => void
-) {
-  let timeout: NodeJS.Timeout;
-  const scheduleChange = () => {
-    timeout = setTimeout(() => {
-      const rand = Math.floor(Math.random() * 10);
-      listener({
-        conversations: [
-          {
-            id: '1',
-            closed: false,
-            unread: rand > 4 ? 0 : rand,
-          },
-        ],
-      });
-      scheduleChange();
-    }, Math.random() * 10e3);
-  };
-  scheduleChange();
-  return () => clearTimeout(timeout);
-}
-
-const watch = watchAtlasSupportStats;
+import type { ViewProps } from 'react-native';
+import { AtlasSupportWidget as Widget } from './atlas-support-widget';
+import { watchAtlasSupportStats as watchStats } from './watch-atlas-support-stats';
+import type {
+  TAtlasSupportListener,
+  TAtlasSupportStats,
+} from './watch-atlas-support-stats';
 
 /**
  * Creates an instance of SDK that will share the same session
  *
  * @param {string} appId - Atlas App ID (https://app.getatlas.io/settings/company)
  */
-export function createAtlasSupportSDK(appId: string): AtlasSupportSDK {
-  const userIdentity: Required<AtlasSupportIdentity> = {
+export function createAtlasSupportSDK(appId: string): TAtlasSupportSDK {
+  const userIdentity: TAtlasSupportIdentity = {
     userId: '',
     userHash: '',
     userName: '',
     userEmail: '',
   };
 
-  const listeners: Array<(identity: Required<AtlasSupportIdentity>) => void> =
+  const listeners: Array<(identity: Required<TAtlasSupportIdentity>) => void> =
     [];
 
-  function identify(identity: AtlasSupportIdentity) {
+  function identify(identity: TAtlasSupportIdentity) {
     const newIdentity = Object.assign(
       userIdentity,
       { userId: '', userHash: '', userName: '', userEmail: '' },
@@ -90,7 +32,6 @@ export function createAtlasSupportSDK(appId: string): AtlasSupportSDK {
     listeners.forEach((listener) => listener(newIdentity));
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-shadow
   const AtlasSupportWidget = React.memo(function AtlasSupportWidget(
     props: ViewProps
   ): JSX.Element {
@@ -115,12 +56,20 @@ export function createAtlasSupportSDK(appId: string): AtlasSupportSDK {
     );
   }) as unknown as () => JSX.Element;
 
-  // eslint-disable-next-line @typescript-eslint/no-shadow
   function watchAtlasSupportStats(
-    listener: (stats: AtlasSupportStats) => void
+    listener: (stats: TAtlasSupportStats) => void
   ) {
-    // TODO: Reset value when identity is changed
-    return watch(appId, userIdentity, listener);
+    let close = watchStats(appId, userIdentity, listener);
+    const restart = (newIdentity: TAtlasSupportIdentity) => {
+      close();
+      listener({ conversations: [] });
+      close = watchStats(appId, newIdentity, listener);
+    };
+    listeners.push(restart);
+    return () => {
+      close();
+      listeners.splice(listeners.indexOf(restart), 1);
+    };
   }
 
   return { identify, AtlasSupportWidget, watchAtlasSupportStats };
@@ -130,32 +79,20 @@ export type AtlasSupportAppSettings = {
   appId: string;
 };
 
-export type AtlasSupportIdentity = (
-  | {
-      userId?: undefined;
-      userHash?: undefined;
-    }
-  | {
-      userId?: string;
-      userHash?: string;
-    }
-) & {
+export type TAtlasSupportIdentity = {
+  userId: string;
+  userHash: string;
   userName?: string;
   userEmail?: string;
 };
 
-export type AtlasSupportWidgetProps = ViewProps &
-  AtlasSupportAppSettings &
-  AtlasSupportIdentity;
+export type {
+  TAtlasSupportListener,
+  TAtlasSupportStats,
+} from './watch-atlas-support-stats';
 
-export type AtlasSupportStats = {
-  conversations: Array<{ id: string; closed: boolean; unread: number }>;
-};
-
-export type AtlasSupportListener = (stats: AtlasSupportStats) => void;
-
-export type AtlasSupportSDK = {
-  identify: (identity: AtlasSupportIdentity) => void;
+export type TAtlasSupportSDK = {
+  identify: (identity: TAtlasSupportIdentity) => void;
   AtlasSupportWidget: (props: ViewProps) => JSX.Element;
-  watchAtlasSupportStats: (listener: AtlasSupportListener) => () => void;
+  watchAtlasSupportStats: (listener: TAtlasSupportListener) => () => void;
 };
