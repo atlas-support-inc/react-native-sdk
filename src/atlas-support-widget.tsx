@@ -28,6 +28,7 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
     userHash,
     userEmail = '',
     userName = '',
+    resetStorage = false,
     ...viewProps
   } = props;
 
@@ -38,13 +39,22 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
     [appId, userId, userHash, userName, userEmail]
   );
 
+  const resetStorageScript = resetStorage
+    ? '(() => window.localStorage.clear())()'
+    : undefined;
+
   return (
     <View {...viewProps}>
-      <WebView source={webViewSource} />
+      <WebView
+        source={webViewSource}
+        javaScriptEnabled
+        domStorageEnabled
+        injectedJavaScript={resetStorageScript}
+      />
     </View>
   );
 }
 
 export type TAtlasSupportWidgetProps = ViewProps &
   AtlasSupportAppSettings &
-  TAtlasSupportIdentity;
+  TAtlasSupportIdentity & { resetStorage?: boolean };

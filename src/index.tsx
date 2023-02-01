@@ -13,7 +13,10 @@ import type {
  * @param {string} appId - Atlas App ID (https://app.getatlas.io/settings/company)
  */
 export function createAtlasSupportSDK(appId: string): TAtlasSupportSDK {
-  const userIdentity: TAtlasSupportIdentity = {
+  // Flags to reset local storage at first render at the very beginning and after every identity change
+  let requireStorageReset = true;
+
+  let userIdentity: TAtlasSupportIdentity = {
     userId: '',
     userHash: '',
     userName: '',
@@ -25,10 +28,11 @@ export function createAtlasSupportSDK(appId: string): TAtlasSupportSDK {
 
   function identify(identity: TAtlasSupportIdentity) {
     const newIdentity = Object.assign(
-      userIdentity,
       { userId: '', userHash: '', userName: '', userEmail: '' },
       identity
     );
+    userIdentity = newIdentity;
+    requireStorageReset = true;
     listeners.forEach((listener) => listener(newIdentity));
   }
 
@@ -44,6 +48,9 @@ export function createAtlasSupportSDK(appId: string): TAtlasSupportSDK {
       };
     }, []);
 
+    const resetStorage = requireStorageReset;
+    if (resetStorage) requireStorageReset = false;
+
     return (
       <Widget
         {...props}
@@ -52,6 +59,7 @@ export function createAtlasSupportSDK(appId: string): TAtlasSupportSDK {
         userHash={identity.userHash}
         userName={identity.userName}
         userEmail={identity.userEmail}
+        resetStorage={resetStorage}
       />
     );
   }) as unknown as () => JSX.Element;

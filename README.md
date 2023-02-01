@@ -4,7 +4,7 @@ Atlas customer support chat widget
 
 ## Installation
 
-This modules requires [react-native-webview](https://www.npmjs.com/package/react-native-webview) to be installed:
+This module requires [react-native-webview](https://www.npmjs.com/package/react-native-webview) to be installed:
 
 ```sh
 npm install @atlasinc/react-native-sdk react-native-webview
