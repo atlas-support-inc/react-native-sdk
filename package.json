@@ -40,13 +40,8 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/atlas-support-inc/react-native-sdk.git",
   "author": "Atlas Support Inc <engineers@getatlas.io> (https://getatlas.io)",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/atlas-support-inc/react-native-sdk.git/issues"
-  },
-  "homepage": "https://github.com/atlas-support-inc/react-native-sdk.git#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
