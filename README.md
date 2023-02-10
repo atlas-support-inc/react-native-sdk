@@ -20,15 +20,37 @@ import { createAtlasSupportSDK } from '@atlasinc/react-native-sdk';
 import UserContext from './user-context';
 
 // The APP_ID can be found on Atlas Company Settings page: https://app.getatlas.io/settings/company
-const { identify, watchAtlasSupportStats, AtlasSupportWidget } = createAtlasSupportSDK('APP_ID');
+const {
+  // Authentication method
+  identify,
+  // Realtime updates on conversations status
+  watchAtlasSupportStats,
+  // Chat widget
+  AtlasSupportWidget
+} = createAtlasSupportSDK({
+  // Application ID can be found at https://app.getatlas.io/settings/company
+  appId: 'APP_ID',
+  // Optional user data that can be set later via identify() function
+  userId: '',
+  userHash: '',
+  userName: '',
+  userEmail: '',
+  // Optional error callback
+  onError: (error) => console.error(error)
+});
 
 function Component({ style }) {
   // User identification
-  const { userId, userHash } = // Read more about Atlas authentication: https://help.getatlas.io/articles/620722-user-authentication
-    useContext(UserContext);
+  const user = useContext(UserContext);
   useEffect(() => {
-    identify({ userId, userHash });
-  }, [userId, userHash]);
+    // Read more about Atlas authentication: https://help.getatlas.io/articles/620722-user-authentication
+    identify({
+      userId: user.id,
+      userHash: user.atlasHash,
+      userName: user.fullName,
+      userEmail: user.email
+    });
+  }, [user]);
 
   // Unread messages counter
   const [unread, setUnread] = useState(0);

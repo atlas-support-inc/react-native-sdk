@@ -12,8 +12,16 @@ export function loadConversations(
     }
 
     return response.text().then((text) => {
-      console.error(`HTTP(${response.status}): ${text}`);
-      return Promise.reject(new Error('Stats loading failed'));
+      try {
+        const body = JSON.parse(text);
+        if (
+          typeof body === 'object' &&
+          typeof body.detail === 'string' &&
+          body.detail
+        )
+          return Promise.reject(`Stats failed: ${body.detail}`);
+      } catch (err) {}
+      return Promise.reject(`Stats failed: HTTP(${response.status}) ${text}`);
     });
   });
 }

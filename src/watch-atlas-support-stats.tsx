@@ -125,8 +125,7 @@ export function watchAtlasSupportStats(
       );
     })
     .catch((error) => {
-      if (error === null) return;
-      onError?.(error);
+      if (error !== null) onError?.(error);
     });
 
   return () => {

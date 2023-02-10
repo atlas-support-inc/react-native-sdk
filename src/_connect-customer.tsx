@@ -4,7 +4,7 @@ import type { TCustomer } from './_login';
 export function connectCustomer(
   customer: TCustomer,
   listener: (message: string) => void,
-  onError?: (error: Error) => void
+  onError?: (error: unknown) => void
 ): () => void {
   let killed = false;
   let ws: WebSocket | null = null;
@@ -49,7 +49,7 @@ export function connectCustomer(
     ws.onclose = () => {
       if (killed) return;
 
-      onError?.(new Error('Connection closed'));
+      onError?.('Connection closed');
       setTimeout(connect, reconnectDelay);
       if (reconnectDelay < 120e3) reconnectDelay *= 2;
     };

@@ -21,8 +21,16 @@ export function login(credentials: TCredentials): Promise<TCustomer> {
     }
 
     return response.text().then((text) => {
-      console.error(`HTTP(${response.status}): ${text}`);
-      return Promise.reject(new Error('Login failed'));
+      try {
+        const body = JSON.parse(text);
+        if (
+          typeof body === 'object' &&
+          typeof body.detail === 'string' &&
+          body.detail
+        )
+          return Promise.reject(`Login failed: ${body.detail}`);
+      } catch (err) {}
+      return Promise.reject(`Login failed: HTTP(${response.status}) ${text}`);
     });
   });
 }

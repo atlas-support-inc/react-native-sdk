@@ -12,15 +12,17 @@ import type {
  *
  * @param {string} appId - Atlas App ID (https://app.getatlas.io/settings/company)
  */
-export function createAtlasSupportSDK(appId: string): TAtlasSupportSDK {
+export function createAtlasSupportSDK(
+  settings: TCreateAtlasSupportSDKProps
+): TAtlasSupportSDK {
   // Flags to reset local storage at first render at the very beginning and after every identity change
   let requireStorageReset = true;
 
   let userIdentity: TAtlasSupportIdentity = {
-    userId: '',
-    userHash: '',
-    userName: '',
-    userEmail: '',
+    userId: settings.userId || '',
+    userHash: settings.userHash || '',
+    userName: settings.userName || '',
+    userEmail: settings.userEmail || '',
   };
 
   const listeners: Array<(identity: Required<TAtlasSupportIdentity>) => void> =
@@ -37,7 +39,7 @@ export function createAtlasSupportSDK(appId: string): TAtlasSupportSDK {
   }
 
   const AtlasSupportWidget = React.memo(function AtlasSupportWidget(
-    props: ViewProps
+    props: TSDKAtlasSupportWidgetProps
   ): JSX.Element {
     const [identity, setIdentity] = React.useState(userIdentity);
 
@@ -51,29 +53,47 @@ export function createAtlasSupportSDK(appId: string): TAtlasSupportSDK {
     const resetStorage = requireStorageReset;
     if (resetStorage) requireStorageReset = false;
 
+    const { onError } = props;
+
+    const handleError = React.useCallback(
+      (error: unknown) => {
+        onError?.(error);
+        settings.onError?.(error);
+      },
+      [onError]
+    );
+
     return (
       <Widget
         {...props}
-        appId={appId}
+        appId={settings.appId}
         userId={identity.userId}
         userHash={identity.userHash}
         userName={identity.userName}
         userEmail={identity.userEmail}
         resetStorage={resetStorage}
+        onError={handleError}
       />
     );
   }) as unknown as () => JSX.Element;
 
   function watchAtlasSupportStats(
-    listener: (stats: TAtlasSupportStats) => void
+    listener: (stats: TAtlasSupportStats) => void,
+    options?: { onError?: (error: unknown) => void }
   ) {
-    let close = watchStats(appId, userIdentity, listener);
+    const handleError = (error: unknown) => {
+      options?.onError?.(error);
+      settings.onError?.(error);
+    };
+
+    let close = watchStats(settings.appId, userIdentity, listener, handleError);
     const restart = (newIdentity: TAtlasSupportIdentity) => {
       close();
       listener({ conversations: [] });
-      close = watchStats(appId, newIdentity, listener);
+      close = watchStats(settings.appId, newIdentity, listener, handleError);
     };
     listeners.push(restart);
+
     return () => {
       close();
       listeners.splice(listeners.indexOf(restart), 1);
@@ -83,7 +103,16 @@ export function createAtlasSupportSDK(appId: string): TAtlasSupportSDK {
   return { identify, AtlasSupportWidget, watchAtlasSupportStats };
 }
 
-export type AtlasSupportAppSettings = {
+export type TCreateAtlasSupportSDKProps = {
+  appId: string;
+  onError?: (error: unknown) => void;
+} & Partial<TAtlasSupportIdentity>;
+
+export type TSDKAtlasSupportWidgetProps = ViewProps & {
+  onError?: (error: unknown) => void;
+};
+
+export type TAtlasSupportAppSettings = {
   appId: string;
 };
 
