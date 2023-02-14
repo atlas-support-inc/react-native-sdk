@@ -14,12 +14,13 @@ export function loadConversations(
     return response.text().then((text) => {
       try {
         const body = JSON.parse(text);
-        if (
+        const errorMessage =
           typeof body === 'object' &&
-          typeof body.detail === 'string' &&
-          body.detail
-        )
-          return Promise.reject(`Stats failed: ${body.detail}`);
+          'detail' in body &&
+          typeof body.detail === 'string'
+            ? body.detail
+            : JSON.stringify(body);
+        return Promise.reject(`Stats failed: ${errorMessage}`);
       } catch (err) {}
       return Promise.reject(`Stats failed: HTTP(${response.status}) ${text}`);
     });

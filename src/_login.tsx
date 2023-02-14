@@ -23,12 +23,13 @@ export function login(credentials: TCredentials): Promise<TCustomer> {
     return response.text().then((text) => {
       try {
         const body = JSON.parse(text);
-        if (
+        const errorMessage =
           typeof body === 'object' &&
-          typeof body.detail === 'string' &&
-          body.detail
-        )
-          return Promise.reject(`Login failed: ${body.detail}`);
+          'detail' in body &&
+          typeof body.detail === 'string'
+            ? body.detail
+            : JSON.stringify(body);
+        return Promise.reject(`Login failed: ${errorMessage}`);
       } catch (err) {}
       return Promise.reject(`Login failed: HTTP(${response.status}) ${text}`);
     });
