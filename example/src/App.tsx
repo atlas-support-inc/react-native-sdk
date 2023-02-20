@@ -2,15 +2,18 @@ import * as React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { AtlasSupportWidget, watchAtlasSupportStats } from './atlas';
+import sdk, { user, userEmpty } from './atlas';
+import type { TAtlasSupportIdentity } from '@atlasinc/react-native-sdk';
 
 const Stack = createNativeStackNavigator();
+
+let currentUser: TAtlasSupportIdentity = user;
 
 function HomeScreenOptions({ navigation }: any) {
   const [newMessages, setNewMessages] = React.useState(0);
   React.useEffect(
     () =>
-      watchAtlasSupportStats((stats) => {
+      sdk.watchAtlasSupportStats((stats) => {
         const unreadTotal = stats.conversations.reduce(
           (total, c) => total + c.unread,
           0
@@ -56,10 +59,29 @@ function HomeScreen() {
   );
 }
 
+function HelpScreenOptions() {
+  return {
+    headerRight: () => (
+      <View style={[styles.helpButton]}>
+        <Text
+          style={[styles.helpButtonText]}
+          onPress={() => {
+            currentUser === user
+              ? sdk.identify((currentUser = userEmpty))
+              : sdk.identify((currentUser = user));
+          }}
+        >
+          ↻
+        </Text>
+      </View>
+    ),
+  };
+}
+
 function HelpScreen() {
   return (
     <View style={styles.helpPage}>
-      <AtlasSupportWidget style={styles.chat} />
+      <sdk.AtlasSupportWidget style={styles.chat} />
     </View>
   );
 }
@@ -73,7 +95,11 @@ export default function App() {
           component={HomeScreen}
           options={HomeScreenOptions}
         />
-        <Stack.Screen name="Help" component={HelpScreen} />
+        <Stack.Screen
+          name="Help"
+          component={HelpScreen}
+          options={HelpScreenOptions}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
