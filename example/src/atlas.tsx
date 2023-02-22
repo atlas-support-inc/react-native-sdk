@@ -6,6 +6,11 @@ export const user = {
   userHash: '5d88e73eeba85abf97aec8d390e9ab0e467bd7b212a2bcca1c3fbcaa8972ad01',
 };
 
+export const userSecond = {
+  userId: '15c4666c-2def-45a9-825c-590b3d4c95df',
+  userHash: 'bbf35a628677552491b17695c85986400736cafcdd80457e3534c34881b7f0c4',
+};
+
 export const userEmpty = {
   userId: '',
   userHash: '',

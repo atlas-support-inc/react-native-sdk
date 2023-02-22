@@ -2,7 +2,7 @@ import * as React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import sdk, { user, userEmpty } from './atlas';
+import sdk, { user, userSecond } from './atlas';
 import type { TAtlasSupportIdentity } from '@atlasinc/react-native-sdk';
 
 const Stack = createNativeStackNavigator();
@@ -67,7 +67,7 @@ function HelpScreenOptions() {
           style={[styles.helpButtonText]}
           onPress={() => {
             currentUser === user
-              ? sdk.identify((currentUser = userEmpty))
+              ? sdk.identify((currentUser = userSecond))
               : sdk.identify((currentUser = user));
           }}
         >

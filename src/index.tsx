@@ -21,18 +21,14 @@ export function createAtlasSupportSDK(
   let userIdentity: TAtlasSupportIdentity = {
     userId: settings.userId || '',
     userHash: settings.userHash || '',
-    userName: settings.userName || '',
-    userEmail: settings.userEmail || '',
+    userName: settings.userName,
+    userEmail: settings.userEmail,
   };
 
-  const listeners: Array<(identity: Required<TAtlasSupportIdentity>) => void> =
-    [];
+  const listeners: Array<(identity: TAtlasSupportIdentity) => void> = [];
 
   function identify(identity: TAtlasSupportIdentity) {
-    const newIdentity = Object.assign(
-      { userId: '', userHash: '', userName: '', userEmail: '' },
-      identity
-    );
+    const newIdentity = Object.assign({}, identity);
     userIdentity = newIdentity;
     requireStorageReset = true;
     listeners.forEach((listener) => listener(newIdentity));

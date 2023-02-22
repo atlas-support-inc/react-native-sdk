@@ -4,20 +4,41 @@ import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import type { TAtlasSupportAppSettings, TAtlasSupportIdentity } from '.';
 import { ATLAS_WIDGET_BASE_URL } from './_config';
 
+const clearAtlasStateScript = (appId: string) => `((doc, ls, ss) => {
+  ["atlasLocation", "atlasIdentity"].forEach(ls.removeItem.bind(ls));
+  Object.keys(sessionStorage).filter(key => ~key.indexOf('atlas-')).forEach(ss.removeItem.bind(ss));
+  ["atlasIdentity", "atlasIdentity${appId}"].forEach((key) => {
+    const assign = key + '=;';
+    const expires = 'expires=' + new Date(0).toUTCString() + ';';
+    const path = 'path=/;';
+    const domain =
+        'domain=' + (doc.domain.match(/[^.]*\\.[^.]*$/) || [''])[0] + ';';
+    doc.cookie = assign + expires + path + domain;
+  });
+})(window.document, window.localStorage, window.sessionStorage)`;
+
 const buildWidgetUrl = (
   appId: string,
   userId: string,
   userHash: string,
-  userName: string,
-  userEmail: string
+  userName?: string,
+  userEmail?: string
 ) => {
-  const params = new URLSearchParams({
-    appId,
-    userId,
-    userHash,
-    userName,
-    userEmail,
-  });
+  const params = [
+    ['appId', appId],
+    ['userId', userId],
+    ['userHash', userHash],
+    ['userName', userName],
+    ['userEmail', userEmail],
+  ]
+    .filter(
+      (param): param is [string, string] => typeof param[1] !== 'undefined'
+    )
+    .map(
+      ([key, value]) =>
+        encodeURIComponent(key) + '=' + encodeURIComponent(value)
+    )
+    .join('&');
   return `${ATLAS_WIDGET_BASE_URL}?${params}`;
 };
 
@@ -26,8 +47,8 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
     appId,
     userId,
     userHash,
-    userEmail = '',
-    userName = '',
+    userEmail,
+    userName,
     resetStorage = false,
     onError,
     ...viewProps
@@ -59,7 +80,7 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
   );
 
   const resetStorageScript = resetStorage
-    ? '(() => window.localStorage.clear())()'
+    ? clearAtlasStateScript(appId)
     : undefined;
 
   return (
