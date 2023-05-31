@@ -20,7 +20,7 @@ export function createAtlasSupportSDK(
 
   let userIdentity: TAtlasSupportIdentity = {
     userId: settings.userId || '',
-    userHash: settings.userHash || '',
+    userHash: settings.userHash,
     userName: settings.userName,
     userEmail: settings.userEmail,
   };
@@ -114,7 +114,7 @@ export type TAtlasSupportAppSettings = {
 
 export type TAtlasSupportIdentity = {
   userId: string;
-  userHash: string;
+  userHash?: string;
   userName?: string;
   userEmail?: string;
 };

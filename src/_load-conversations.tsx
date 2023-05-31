@@ -2,11 +2,12 @@ import { ATLAS_API_BASE_URL } from './_config';
 
 export function loadConversations(
   atlasId: string,
-  userHash: string
+  userHash?: string
 ): Promise<TConversation[]> {
-  return fetch(`${ATLAS_API_BASE_URL}/client-app/conversations/${atlasId}`, {
-    headers: { 'x-atlas-user-hash': userHash },
-  }).then((response) => {
+  return fetch(
+    `${ATLAS_API_BASE_URL}/client-app/conversations/${atlasId}`,
+    userHash ? { headers: { 'x-atlas-user-hash': userHash } } : undefined
+  ).then((response) => {
     if (response.status >= 200 && response.status < 300) {
       return response.json().then((json) => json.data);
     }

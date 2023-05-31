@@ -11,7 +11,7 @@ export function login(credentials: TCredentials): Promise<TCustomer> {
     body: JSON.stringify({
       appId: credentials.appId,
       userId: credentials.userId,
-      userHash: credentials.userHash,
+      ...(credentials.userHash && { userHash: credentials.userHash }),
       ...(credentials.userName && { name: credentials.userName }),
       ...(credentials.userEmail && { email: credentials.userEmail }),
     }),
@@ -39,7 +39,7 @@ export function login(credentials: TCredentials): Promise<TCustomer> {
 export type TCredentials = {
   appId: string;
   userId: string;
-  userHash: string;
+  userHash?: string;
   userName?: string;
   userEmail?: string;
 };

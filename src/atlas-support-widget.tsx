@@ -20,7 +20,7 @@ const clearAtlasStateScript = (appId: string) => `((doc, ls, ss) => {
 const buildWidgetUrl = (
   appId: string,
   userId: string,
-  userHash: string,
+  userHash?: string,
   userName?: string,
   userEmail?: string
 ) => {
@@ -72,9 +72,15 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
           errorMessage: string;
         };
         if (message.type === 'atlas:error') {
-          errorCallbackRef.current?.(`WidgetError: ${message.errorMessage}`);
+          errorCallbackRef.current?.(
+            `AtlasSupportWidget: ${message.errorMessage}`
+          );
         }
-      } catch (error) {}
+      } catch (error) {
+        errorCallbackRef.current?.(
+          `AtlasSupportWidget: ${event.nativeEvent.data}`
+        );
+      }
     },
     [errorCallbackRef]
   );
