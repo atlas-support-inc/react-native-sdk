@@ -1,13 +1,21 @@
 import type { TAtlasSupportIdentity } from '.';
 import { connectCustomer } from './_connect-customer';
-import { loadConversations, TConversation } from './_load-conversations';
+import {
+  loadConversations,
+  MessageSide,
+  TConversation,
+} from './_load-conversations';
 import { login } from './_login';
 import { safeJsonParse } from './_safe-json-parse';
 
 const getConversationStats = (conversation: TConversation) => {
   const unread = conversation.messages.reduce(
-    (accUnread: number, message: { read: boolean }) =>
-      message.read ? accUnread : accUnread + 1,
+    (accUnread: number, message) =>
+      'read' in message &&
+      !message.read &&
+      [MessageSide.BOT, MessageSide.AGENT].includes(message.side)
+        ? accUnread + 1
+        : accUnread,
     0
   );
   return {

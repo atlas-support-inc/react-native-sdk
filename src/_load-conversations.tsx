@@ -28,8 +28,16 @@ export function loadConversations(
   });
 }
 
+export enum MessageSide {
+  CUSTOMER = 1,
+  AGENT = 2,
+  BOT = 3,
+}
+
+export type TConversationMessage = { read?: boolean; side: MessageSide };
+
 export type TConversation = {
   id: string;
   closed?: boolean;
-  messages: Array<{ read: boolean }>;
+  messages: TConversationMessage[];
 };
