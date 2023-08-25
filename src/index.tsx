@@ -50,7 +50,7 @@ export function createAtlasSupportSDK(
     const resetStorage = requireStorageReset;
     if (resetStorage) requireStorageReset = false;
 
-    const { onError } = props;
+    const { onError, onNewTicket } = props;
 
     const handleError = React.useCallback(
       (error: unknown) => {
@@ -58,6 +58,14 @@ export function createAtlasSupportSDK(
         settings.onError?.(error);
       },
       [onError]
+    );
+
+    const handleNewTicket = React.useCallback(
+      (ticketId: string) => {
+        onNewTicket?.(ticketId);
+        settings.onNewTicket?.(ticketId);
+      },
+      [onNewTicket]
     );
 
     return (
@@ -69,6 +77,7 @@ export function createAtlasSupportSDK(
         userName={identity.userName}
         userEmail={identity.userEmail}
         resetStorage={resetStorage}
+        onNewTicket={handleNewTicket}
         onError={handleError}
       />
     );
@@ -119,10 +128,12 @@ export function createAtlasSupportSDK(
 
 export type TCreateAtlasSupportSDKProps = {
   appId: string;
+  onNewTicket?: (ticketId: string) => void;
   onError?: (error: unknown) => void;
 } & Partial<TAtlasSupportIdentity>;
 
 export type TSDKAtlasSupportWidgetProps = ViewProps & {
+  onNewTicket?: (ticketId: string) => void;
   onError?: (error: unknown) => void;
 };
 
