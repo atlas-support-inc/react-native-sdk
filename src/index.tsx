@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { ViewProps } from 'react-native';
 import { AtlasSupportWidget as Widget } from './atlas-support-widget';
 import { watchAtlasSupportStats as watchStats } from './watch-atlas-support-stats';
+import { updateAtlasCustomFields as updateCustomFields } from './update-atlas-custom-fields';
 import type {
   TAtlasSupportListener,
   TAtlasSupportStats,
@@ -96,7 +97,24 @@ export function createAtlasSupportSDK(
     };
   }
 
-  return { identify, AtlasSupportWidget, watchAtlasSupportStats };
+  function updateAtlasCustomFields(
+    ticketId: string,
+    customFields: Record<string, any>
+  ) {
+    return updateCustomFields(
+      settings.appId,
+      ticketId,
+      customFields,
+      userIdentity.userHash
+    );
+  }
+
+  return {
+    identify,
+    AtlasSupportWidget,
+    watchAtlasSupportStats,
+    updateAtlasCustomFields,
+  };
 }
 
 export type TCreateAtlasSupportSDKProps = {
@@ -128,4 +146,8 @@ export type TAtlasSupportSDK = {
   identify: (identity: TAtlasSupportIdentity) => void;
   AtlasSupportWidget: (props: ViewProps) => JSX.Element;
   watchAtlasSupportStats: (listener: TAtlasSupportListener) => () => void;
+  updateAtlasCustomFields: (
+    ticketId: string,
+    customFields: Record<string, any>
+  ) => Promise<void>;
 };
