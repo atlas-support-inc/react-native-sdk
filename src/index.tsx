@@ -155,7 +155,7 @@ export type {
 
 export type TAtlasSupportSDK = {
   identify: (identity: TAtlasSupportIdentity) => void;
-  AtlasSupportWidget: (props: ViewProps) => JSX.Element;
+  AtlasSupportWidget: (props: TSDKAtlasSupportWidgetProps) => JSX.Element;
   watchAtlasSupportStats: (listener: TAtlasSupportListener) => () => void;
   updateAtlasCustomFields: (
     ticketId: string,
