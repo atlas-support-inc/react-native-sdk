@@ -26,6 +26,7 @@ export const userInvalid = {
 const atlasSupportSDK = createAtlasSupportSDK({
   appId,
   ...user,
+  onNewTicket: console.log.bind(console, 'onNewTicket (global)'),
   onError: console.error,
 });
 

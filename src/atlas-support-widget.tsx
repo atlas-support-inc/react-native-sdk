@@ -50,6 +50,7 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
     userEmail,
     userName,
     resetStorage = false,
+    onNewTicket,
     onError,
     ...viewProps
   } = props;
@@ -64,17 +65,19 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
   const errorCallbackRef = React.useRef(onError);
   errorCallbackRef.current = onError;
 
+  const newTicketCallbackRef = React.useRef(onNewTicket);
+  newTicketCallbackRef.current = onNewTicket;
+
   const handleMessage = React.useCallback(
     (event: WebViewMessageEvent) => {
       try {
-        const message = JSON.parse(event.nativeEvent.data) as {
-          type: 'atlas:error';
-          errorMessage: string;
-        };
+        const message = JSON.parse(event.nativeEvent.data) as TAtlasPacket;
         if (message.type === 'atlas:error') {
           errorCallbackRef.current?.(
             `AtlasSupportWidget: ${message.errorMessage}`
           );
+        } else if (message.type === 'atlas:newTicket') {
+          newTicketCallbackRef.current?.(message.ticketId);
         }
       } catch (error) {
         errorCallbackRef.current?.(
@@ -102,9 +105,20 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
   );
 }
 
+type TAtlasPacket =
+  | {
+      type: 'atlas:error';
+      errorMessage: string;
+    }
+  | {
+      type: 'atlas:newTicket';
+      ticketId: string;
+    };
+
 export type TAtlasSupportWidgetProps = ViewProps &
   TAtlasSupportAppSettings &
   TAtlasSupportIdentity & {
     resetStorage?: boolean;
+    onNewTicket?: (ticketId: string) => void;
     onError?: (error: unknown) => void;
   };

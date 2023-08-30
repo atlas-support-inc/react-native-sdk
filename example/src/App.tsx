@@ -59,17 +59,33 @@ function HomeScreen() {
   );
 }
 
+const toggleUsers = () => {
+  currentUser === user
+    ? sdk.identify((currentUser = userSecond))
+    : sdk.identify((currentUser = user));
+};
+
+let lastCreatedTicketId: string | null = null;
+const listenNewTicketCallback = (ticketId: string) => {
+  console.log('onNewTicket (local)', ticketId);
+  lastCreatedTicketId = ticketId;
+};
+
+const updateFields = () => {
+  if (lastCreatedTicketId) {
+    sdk.updateAtlasCustomFields(lastCreatedTicketId, {
+      'custom-value': 'value',
+    });
+  }
+};
+
 function HelpScreenOptions() {
   return {
     headerRight: () => (
       <View style={[styles.helpButton]}>
         <Text
           style={[styles.helpButtonText]}
-          onPress={() => {
-            currentUser === user
-              ? sdk.identify((currentUser = userSecond))
-              : sdk.identify((currentUser = user));
-          }}
+          onPress={Math.random() ? updateFields : toggleUsers}
         >
           ↻
         </Text>
@@ -81,7 +97,10 @@ function HelpScreenOptions() {
 function HelpScreen() {
   return (
     <View style={styles.helpPage}>
-      <sdk.AtlasSupportWidget style={styles.chat} />
+      <sdk.AtlasSupportWidget
+        style={styles.chat}
+        onNewTicket={listenNewTicketCallback}
+      />
     </View>
   );
 }

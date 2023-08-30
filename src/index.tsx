@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { ViewProps } from 'react-native';
 import { AtlasSupportWidget as Widget } from './atlas-support-widget';
 import { watchAtlasSupportStats as watchStats } from './watch-atlas-support-stats';
+import { updateAtlasCustomFields as updateCustomFields } from './update-atlas-custom-fields';
 import type {
   TAtlasSupportListener,
   TAtlasSupportStats,
@@ -49,7 +50,7 @@ export function createAtlasSupportSDK(
     const resetStorage = requireStorageReset;
     if (resetStorage) requireStorageReset = false;
 
-    const { onError } = props;
+    const { onError, onNewTicket } = props;
 
     const handleError = React.useCallback(
       (error: unknown) => {
@@ -57,6 +58,14 @@ export function createAtlasSupportSDK(
         settings.onError?.(error);
       },
       [onError]
+    );
+
+    const handleNewTicket = React.useCallback(
+      (ticketId: string) => {
+        onNewTicket?.(ticketId);
+        settings.onNewTicket?.(ticketId);
+      },
+      [onNewTicket]
     );
 
     return (
@@ -68,6 +77,7 @@ export function createAtlasSupportSDK(
         userName={identity.userName}
         userEmail={identity.userEmail}
         resetStorage={resetStorage}
+        onNewTicket={handleNewTicket}
         onError={handleError}
       />
     );
@@ -96,15 +106,34 @@ export function createAtlasSupportSDK(
     };
   }
 
-  return { identify, AtlasSupportWidget, watchAtlasSupportStats };
+  function updateAtlasCustomFields(
+    ticketId: string,
+    customFields: Record<string, any>
+  ) {
+    return updateCustomFields(
+      settings.appId,
+      ticketId,
+      customFields,
+      userIdentity.userHash
+    );
+  }
+
+  return {
+    identify,
+    AtlasSupportWidget,
+    watchAtlasSupportStats,
+    updateAtlasCustomFields,
+  };
 }
 
 export type TCreateAtlasSupportSDKProps = {
   appId: string;
+  onNewTicket?: (ticketId: string) => void;
   onError?: (error: unknown) => void;
 } & Partial<TAtlasSupportIdentity>;
 
 export type TSDKAtlasSupportWidgetProps = ViewProps & {
+  onNewTicket?: (ticketId: string) => void;
   onError?: (error: unknown) => void;
 };
 
@@ -126,6 +155,10 @@ export type {
 
 export type TAtlasSupportSDK = {
   identify: (identity: TAtlasSupportIdentity) => void;
-  AtlasSupportWidget: (props: ViewProps) => JSX.Element;
+  AtlasSupportWidget: (props: TSDKAtlasSupportWidgetProps) => JSX.Element;
   watchAtlasSupportStats: (listener: TAtlasSupportListener) => () => void;
+  updateAtlasCustomFields: (
+    ticketId: string,
+    customFields: Record<string, any>
+  ) => Promise<void>;
 };
