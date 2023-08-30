@@ -25,6 +25,8 @@ const {
   identify,
   // Realtime updates on conversations status
   watchAtlasSupportStats,
+  // Manually set custom ticket fields
+  updateAtlasCustomFields,
   // Chat widget
   AtlasSupportWidget
 } = createAtlasSupportSDK({
@@ -39,7 +41,7 @@ const {
   onError: (error) => console.error(error)
 });
 
-function Component({ style }) {
+function Component() {
   // User identification
   const user = useContext(UserContext);
   useEffect(() => {
@@ -65,8 +67,11 @@ function Component({ style }) {
 
   // Using chat widget
   return (
-    <View style={style}>
-      <AtlasSupportWidget style={{ flex: 1 }} />
+    <View>
+      <AtlasSupportWidget
+        style={{ flex: 1 }}
+        onNewTicket={(ticketId) => updateAtlasCustomFields(ticketId, { customTicketField: 'value' })}
+      />
     </View>
   );
 }
