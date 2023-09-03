@@ -13,6 +13,7 @@ export async function updateAtlasCustomFields(
         ...(userHash && { 'x-atlas-user-hash': userHash }),
         'Content-Type': 'application/json',
       },
+      method: 'POST',
       body: JSON.stringify({ customFields, conversationId: ticketId }),
     }
   );
