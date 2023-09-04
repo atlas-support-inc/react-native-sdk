@@ -70,7 +70,7 @@ function Component() {
     <View>
       <AtlasSupportWidget
         style={{ flex: 1 }}
-        onNewTicket={(ticketId) => updateAtlasCustomFields(ticketId, { customTicketField: 'value' })}
+        onNewTicket={(data) => updateAtlasCustomFields(data.ticketId, { customTicketField: 'value' })}
       />
     </View>
   );

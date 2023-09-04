@@ -77,7 +77,7 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
             `AtlasSupportWidget: ${message.errorMessage}`
           );
         } else if (message.type === 'atlas:newTicket') {
-          newTicketCallbackRef.current?.(message.ticketId);
+          newTicketCallbackRef.current?.({ ticketId: message.ticketId });
         }
       } catch (error) {
         errorCallbackRef.current?.(
@@ -119,6 +119,6 @@ export type TAtlasSupportWidgetProps = ViewProps &
   TAtlasSupportAppSettings &
   TAtlasSupportIdentity & {
     resetStorage?: boolean;
-    onNewTicket?: (ticketId: string) => void;
+    onNewTicket?: (data: { ticketId: string }) => void;
     onError?: (error: unknown) => void;
   };
