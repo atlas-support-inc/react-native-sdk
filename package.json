@@ -1,6 +1,6 @@
 {
   "name": "@atlasinc/react-native-sdk",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "test",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
