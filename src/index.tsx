@@ -61,9 +61,9 @@ export function createAtlasSupportSDK(
     );
 
     const handleNewTicket = React.useCallback(
-      (ticketId: string) => {
-        onNewTicket?.(ticketId);
-        settings.onNewTicket?.(ticketId);
+      (data: { ticketId: string }) => {
+        onNewTicket?.(data);
+        settings.onNewTicket?.(data);
       },
       [onNewTicket]
     );
@@ -128,12 +128,12 @@ export function createAtlasSupportSDK(
 
 export type TCreateAtlasSupportSDKProps = {
   appId: string;
-  onNewTicket?: (ticketId: string) => void;
+  onNewTicket?: (data: { ticketId: string }) => void;
   onError?: (error: unknown) => void;
 } & Partial<TAtlasSupportIdentity>;
 
 export type TSDKAtlasSupportWidgetProps = ViewProps & {
-  onNewTicket?: (ticketId: string) => void;
+  onNewTicket?: (data: { ticketId: string }) => void;
   onError?: (error: unknown) => void;
 };
 
