@@ -7,6 +7,9 @@ import type {
   TAtlasSupportListener,
   TAtlasSupportStats,
 } from './watch-atlas-support-stats';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const asyncStorageAtlasIdKey = '@atlas.so/atlasId';
 
 /**
  * Creates an instance of SDK that will share the same session
@@ -17,10 +20,10 @@ export function createAtlasSupportSDK(
   settings: TCreateAtlasSupportSDKProps
 ): TAtlasSupportSDK {
   // Flags to reset local storage at first render at the very beginning and after every identity change
-  let requireStorageReset = true;
 
   let userIdentity: TAtlasSupportIdentity = {
-    userId: settings.userId || '',
+    atlasId: undefined,
+    userId: settings.userId,
     userHash: settings.userHash,
     userName: settings.userName,
     userEmail: settings.userEmail,
@@ -29,10 +32,15 @@ export function createAtlasSupportSDK(
   const listeners: Array<(identity: TAtlasSupportIdentity) => void> = [];
 
   function identify(identity: TAtlasSupportIdentity) {
-    const newIdentity = Object.assign({}, identity);
-    userIdentity = newIdentity;
-    requireStorageReset = true;
-    listeners.forEach((listener) => listener(newIdentity));
+    userIdentity = Object.assign({}, identity);
+    listeners.forEach((listener) => listener(userIdentity));
+  }
+
+  if (!userIdentity.userId) {
+    AsyncStorage.getItem(asyncStorageAtlasIdKey).then((atlasId) => {
+      if (userIdentity.userId) return;
+      identify({ atlasId: atlasId ?? undefined });
+    });
   }
 
   const AtlasSupportWidget = React.memo(function AtlasSupportWidget(
@@ -47,10 +55,7 @@ export function createAtlasSupportSDK(
       };
     }, []);
 
-    const resetStorage = requireStorageReset;
-    if (resetStorage) requireStorageReset = false;
-
-    const { onError, onNewTicket } = props;
+    const { onError, onNewTicket, onChangeIdentity } = props;
 
     const handleError = React.useCallback(
       (error: unknown) => {
@@ -68,16 +73,27 @@ export function createAtlasSupportSDK(
       [onNewTicket]
     );
 
+    const handleChangeIdentity = React.useCallback(
+      (newIdentity: { atlasId: string }) => {
+        AsyncStorage.setItem(asyncStorageAtlasIdKey, newIdentity.atlasId);
+        identify(newIdentity);
+        onChangeIdentity?.(newIdentity);
+        settings.onChangeIdentity?.(newIdentity);
+      },
+      [onChangeIdentity]
+    );
+
     return (
       <Widget
         {...props}
         appId={settings.appId}
+        atlasId={identity.atlasId}
         userId={identity.userId}
         userHash={identity.userHash}
         userName={identity.userName}
         userEmail={identity.userEmail}
-        resetStorage={resetStorage}
         onNewTicket={handleNewTicket}
+        onChangeIdentity={handleChangeIdentity}
         onError={handleError}
       />
     );
@@ -110,15 +126,24 @@ export function createAtlasSupportSDK(
     ticketId: string,
     customFields: Record<string, any>
   ) {
+    if (!userIdentity.atlasId) {
+      return Promise.reject('Session is not initialized');
+    }
+
     return updateCustomFields(
-      settings.appId,
+      userIdentity.atlasId,
       ticketId,
       customFields,
       userIdentity.userHash
     );
   }
 
+  function resetIdentity() {
+    AsyncStorage.removeItem(asyncStorageAtlasIdKey).finally(() => identify({}));
+  }
+
   return {
+    resetIdentity,
     identify,
     AtlasSupportWidget,
     watchAtlasSupportStats,
@@ -129,11 +154,13 @@ export function createAtlasSupportSDK(
 export type TCreateAtlasSupportSDKProps = {
   appId: string;
   onNewTicket?: (data: { ticketId: string }) => void;
+  onChangeIdentity?: (data: { atlasId: string }) => void;
   onError?: (error: unknown) => void;
-} & Partial<TAtlasSupportIdentity>;
+} & Partial<Omit<TAtlasSupportIdentity, 'atlasId'>>;
 
 export type TSDKAtlasSupportWidgetProps = ViewProps & {
   onNewTicket?: (data: { ticketId: string }) => void;
+  onChangeIdentity?: (data: { atlasId: string }) => void;
   onError?: (error: unknown) => void;
 };
 
@@ -142,7 +169,8 @@ export type TAtlasSupportAppSettings = {
 };
 
 export type TAtlasSupportIdentity = {
-  userId: string;
+  atlasId?: string;
+  userId?: string;
   userHash?: string;
   userName?: string;
   userEmail?: string;
@@ -154,7 +182,8 @@ export type {
 } from './watch-atlas-support-stats';
 
 export type TAtlasSupportSDK = {
-  identify: (identity: TAtlasSupportIdentity) => void;
+  resetIdentity: () => void;
+  identify: (identity: Omit<TAtlasSupportIdentity, 'atlasId'>) => void;
   AtlasSupportWidget: (props: TSDKAtlasSupportWidgetProps) => JSX.Element;
   watchAtlasSupportStats: (listener: TAtlasSupportListener) => () => void;
   updateAtlasCustomFields: (
