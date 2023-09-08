@@ -65,8 +65,8 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
   const newTicketCallbackRef = React.useRef(onNewTicket);
   newTicketCallbackRef.current = onNewTicket;
 
-  const changeIndetityCallbackRef = React.useRef(onChangeIdentity);
-  changeIndetityCallbackRef.current = onChangeIdentity;
+  const changeIdentityCallbackRef = React.useRef(onChangeIdentity);
+  changeIdentityCallbackRef.current = onChangeIdentity;
 
   const handleMessage = React.useCallback(
     (event: WebViewMessageEvent) => {
@@ -79,7 +79,7 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
         } else if (message.type === 'atlas:newTicket') {
           newTicketCallbackRef.current?.({ ticketId: message.ticketId });
         } else if (message.type === 'atlas:changeIdentity') {
-          changeIndetityCallbackRef.current?.({ atlasId: message.atlasId });
+          changeIdentityCallbackRef.current?.({ atlasId: message.atlasId });
         }
       } catch (error) {
         errorCallbackRef.current?.(

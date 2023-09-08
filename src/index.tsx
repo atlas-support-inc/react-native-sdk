@@ -138,12 +138,7 @@ export function createAtlasSupportSDK(
     );
   }
 
-  function resetIdentity() {
-    AsyncStorage.removeItem(asyncStorageAtlasIdKey).finally(() => identify({}));
-  }
-
   return {
-    resetIdentity,
     identify,
     AtlasSupportWidget,
     watchAtlasSupportStats,
@@ -182,7 +177,6 @@ export type {
 } from './watch-atlas-support-stats';
 
 export type TAtlasSupportSDK = {
-  resetIdentity: () => void;
   identify: (identity: Omit<TAtlasSupportIdentity, 'atlasId'>) => void;
   AtlasSupportWidget: (props: TSDKAtlasSupportWidgetProps) => JSX.Element;
   watchAtlasSupportStats: (listener: TAtlasSupportListener) => () => void;
