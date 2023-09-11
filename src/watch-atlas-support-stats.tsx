@@ -9,15 +9,16 @@ import { login } from './_login';
 import { safeJsonParse } from './_safe-json-parse';
 
 const getConversationStats = (conversation: TConversation) => {
-  const unread = conversation.messages.reduce(
-    (accUnread: number, message) =>
-      'read' in message &&
-      !message.read &&
-      [MessageSide.BOT, MessageSide.AGENT].includes(message.side)
-        ? accUnread + 1
-        : accUnread,
-    0
-  );
+  const unread =
+    conversation.messages?.reduce(
+      (accUnread: number, message) =>
+        'read' in message &&
+        !message.read &&
+        [MessageSide.BOT, MessageSide.AGENT].includes(message.side)
+          ? accUnread + 1
+          : accUnread,
+      0
+    ) ?? 0;
   return {
     id: conversation.id,
     unread,
@@ -34,14 +35,31 @@ export function watchAtlasSupportStats(
   let killed = false;
   let unsubscribe: (() => void) | null = null;
 
-  login({ appId, ...identity })
-    .then((customer) => {
+  const {
+    atlasId: identityId,
+    userId,
+    userHash,
+    userName,
+    userEmail,
+  } = identity;
+
+  if (!identityId && !userId) return () => {};
+
+  (identityId
+    ? Promise.resolve(identityId)
+    : userId
+    ? login({ appId, userId, userHash, userName, userEmail }).then(
+        (customer) => customer.id
+      )
+    : Promise.reject(null)
+  )
+    .then((atlasId) => {
       if (killed) return Promise.reject(null);
-      return loadConversations(customer.id, identity.userHash).then(
-        (conversations) => [customer, conversations] as const
+      return loadConversations(atlasId, identity.userHash).then(
+        (conversations) => [atlasId, conversations] as const
       );
     })
-    .then(([customer, conversations]) => {
+    .then(([atlasId, conversations]) => {
       if (killed) return;
 
       const stats: TAtlasSupportStats = {
@@ -64,7 +82,7 @@ export function watchAtlasSupportStats(
       };
 
       unsubscribe = connectCustomer(
-        customer,
+        atlasId,
         (packet: string) => {
           const data = safeJsonParse<{
             packet_type: string;

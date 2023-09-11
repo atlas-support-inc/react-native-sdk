@@ -4,28 +4,17 @@ import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import type { TAtlasSupportAppSettings, TAtlasSupportIdentity } from '.';
 import { ATLAS_WIDGET_BASE_URL } from './_config';
 
-const clearAtlasStateScript = (appId: string) => `((doc, ls, ss) => {
-  ["atlasLocation", "atlasIdentity"].forEach(ls.removeItem.bind(ls));
-  Object.keys(sessionStorage).filter(key => ~key.indexOf('atlas-')).forEach(ss.removeItem.bind(ss));
-  ["atlasIdentity", "atlasIdentity${appId}"].forEach((key) => {
-    const assign = key + '=;';
-    const expires = 'expires=' + new Date(0).toUTCString() + ';';
-    const path = 'path=/;';
-    const domain =
-        'domain=' + (doc.domain.match(/[^.]*\\.[^.]*$/) || [''])[0] + ';';
-    doc.cookie = assign + expires + path + domain;
-  });
-})(window.document, window.localStorage, window.sessionStorage)`;
-
 const buildWidgetUrl = (
   appId: string,
-  userId: string,
+  atlasId?: string,
+  userId?: string,
   userHash?: string,
   userName?: string,
   userEmail?: string
 ) => {
   const params = [
     ['appId', appId],
+    ['atlasId', atlasId],
     ['userId', userId],
     ['userHash', userHash],
     ['userName', userName],
@@ -45,21 +34,29 @@ const buildWidgetUrl = (
 export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
   const {
     appId,
+    atlasId,
     userId,
     userHash,
     userEmail,
     userName,
-    resetStorage = false,
     onNewTicket,
+    onChangeIdentity,
     onError,
     ...viewProps
   } = props;
 
   const webViewSource = React.useMemo(
     () => ({
-      uri: buildWidgetUrl(appId, userId, userHash, userName, userEmail),
+      uri: buildWidgetUrl(
+        appId,
+        atlasId,
+        userId,
+        userHash,
+        userName,
+        userEmail
+      ),
     }),
-    [appId, userId, userHash, userName, userEmail]
+    [appId, atlasId, userId, userHash, userName, userEmail]
   );
 
   const errorCallbackRef = React.useRef(onError);
@@ -67,6 +64,9 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
 
   const newTicketCallbackRef = React.useRef(onNewTicket);
   newTicketCallbackRef.current = onNewTicket;
+
+  const changeIdentityCallbackRef = React.useRef(onChangeIdentity);
+  changeIdentityCallbackRef.current = onChangeIdentity;
 
   const handleMessage = React.useCallback(
     (event: WebViewMessageEvent) => {
@@ -77,7 +77,9 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
             `AtlasSupportWidget: ${message.errorMessage}`
           );
         } else if (message.type === 'atlas:newTicket') {
-          newTicketCallbackRef.current?.(message.ticketId);
+          newTicketCallbackRef.current?.({ ticketId: message.ticketId });
+        } else if (message.type === 'atlas:changeIdentity') {
+          changeIdentityCallbackRef.current?.({ atlasId: message.atlasId });
         }
       } catch (error) {
         errorCallbackRef.current?.(
@@ -88,17 +90,12 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
     [errorCallbackRef]
   );
 
-  const resetStorageScript = resetStorage
-    ? clearAtlasStateScript(appId)
-    : undefined;
-
   return (
     <View {...viewProps}>
       <WebView
         source={webViewSource}
         javaScriptEnabled
         domStorageEnabled
-        injectedJavaScript={resetStorageScript}
         onMessage={handleMessage}
       />
     </View>
@@ -113,12 +110,17 @@ type TAtlasPacket =
   | {
       type: 'atlas:newTicket';
       ticketId: string;
+    }
+  | {
+      type: 'atlas:changeIdentity';
+      atlasId: string;
     };
 
 export type TAtlasSupportWidgetProps = ViewProps &
   TAtlasSupportAppSettings &
   TAtlasSupportIdentity & {
-    resetStorage?: boolean;
-    onNewTicket?: (ticketId: string) => void;
+    atlasId?: string;
+    onNewTicket?: (data: { ticketId: string }) => void;
+    onChangeIdentity?: (data: { atlasId: string }) => void;
     onError?: (error: unknown) => void;
   };

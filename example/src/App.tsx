@@ -66,9 +66,9 @@ const toggleUsers = () => {
 };
 
 let lastCreatedTicketId: string | null = null;
-const listenNewTicketCallback = (ticketId: string) => {
-  console.log('onNewTicket (local)', ticketId);
-  lastCreatedTicketId = ticketId;
+const listenNewTicketCallback = (data: { ticketId: string }) => {
+  console.log('onNewTicket (local)', data);
+  lastCreatedTicketId = data.ticketId;
 };
 
 const updateFields = () => {
