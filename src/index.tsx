@@ -14,7 +14,7 @@ const asyncStorageAtlasIdKey = '@atlas.so/atlasId';
 /**
  * Creates an instance of SDK that will share the same session
  *
- * @param {string} appId - Atlas App ID (https://app.getatlas.io/settings/company)
+ * @param {string} appId - Atlas App ID (https://app.atlas.so/settings/company)
  */
 export function createAtlasSupportSDK(
   settings: TCreateAtlasSupportSDKProps

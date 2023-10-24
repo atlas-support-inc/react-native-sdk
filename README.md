@@ -19,7 +19,7 @@ import { createAtlasSupportSDK } from '@atlasinc/react-native-sdk';
 // For demo purpose, assume that user credentials are stored in the React context
 import UserContext from './user-context';
 
-// The APP_ID can be found on Atlas Company Settings page: https://app.getatlas.io/settings/company
+// The APP_ID can be found on Atlas Company Settings page: https://app.atlas.so/settings/company
 const {
   // Authentication method
   identify,
@@ -30,7 +30,7 @@ const {
   // Chat widget
   AtlasSupportWidget
 } = createAtlasSupportSDK({
-  // Application ID can be found at https://app.getatlas.io/settings/company
+  // Application ID can be found at https://app.atlas.so/settings/company
   appId: 'APP_ID',
   // Optional user data that can be set later via identify() function
   userId: '',
@@ -45,7 +45,7 @@ function Component() {
   // User identification
   const user = useContext(UserContext);
   useEffect(() => {
-    // Read more about Atlas authentication: https://help.getatlas.io/articles/620722-user-authentication
+    // Read more about Atlas authentication: https://help.atlas.so/articles/620722-user-authentication
     identify({
       userId: user.id,
       userHash: user.atlasHash,

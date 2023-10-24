@@ -1,6 +1,6 @@
 import { createAtlasSupportSDK } from '@atlasinc/react-native-sdk';
 
-export const appId = 'jbnpaijbo0';
+export const appId = '7wukb9ywp9__x33kupocfb';
 export const user = {
   userId: '1e9322f7-fa86-400d-bf84-4cb64a981910',
   userHash: '5d88e73eeba85abf97aec8d390e9ab0e467bd7b212a2bcca1c3fbcaa8972ad01',
@@ -25,7 +25,7 @@ export const userInvalid = {
 
 const atlasSupportSDK = createAtlasSupportSDK({
   appId,
-  ...user,
+  ...userEmpty,
   onNewTicket: console.log.bind(console, 'onNewTicket (global)'),
   onError: console.error,
 });

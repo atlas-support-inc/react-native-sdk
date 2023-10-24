@@ -40,7 +40,7 @@
     "ios",
     "android"
   ],
-  "author": "Atlas Support Inc <engineers@getatlas.io> (https://getatlas.io)",
+  "author": "Atlas Support Inc <engineers@getatlas.io> (https://atlas.so)",
   "license": "MIT",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
