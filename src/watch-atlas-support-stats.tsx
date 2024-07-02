@@ -5,7 +5,7 @@ import {
   MessageSide,
   TConversation,
 } from './_load-conversations';
-import { login } from './_login';
+import { updateIdentity } from './_updateIdentity';
 import { safeJsonParse } from './_safe-json-parse';
 
 const getConversationStats = (conversation: TConversation) => {
@@ -35,20 +35,14 @@ export function watchAtlasSupportStats(
   let killed = false;
   let unsubscribe: (() => void) | null = null;
 
-  const {
-    atlasId: identityId,
-    userId,
-    userHash,
-    userName,
-    userEmail,
-  } = identity;
+  const { atlasId: identityAtlasId, userId } = identity;
 
-  if (!identityId && !userId) return () => {};
+  if (!identityAtlasId && !userId) return () => {};
 
-  (identityId
-    ? Promise.resolve(identityId)
+  (identityAtlasId
+    ? Promise.resolve(identityAtlasId)
     : userId
-    ? login({ appId, userId, userHash, userName, userEmail }).then(
+    ? updateIdentity({ ...identity, userId, appId }).then(
         (customer) => customer.id
       )
     : Promise.reject(null)

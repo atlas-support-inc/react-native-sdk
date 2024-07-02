@@ -8,6 +8,12 @@ import type {
   TAtlasSupportStats,
 } from './watch-atlas-support-stats';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  updateIdentity,
+  type TIdentityDetails,
+  type TAccountFields,
+  type TCustomerFields,
+} from './_updateIdentity';
 
 const asyncStorageAtlasIdKey = '@atlas.so/atlasId';
 
@@ -27,19 +33,34 @@ export function createAtlasSupportSDK(
     userHash: settings.userHash,
     userName: settings.userName,
     userEmail: settings.userEmail,
+    fields: settings.fields,
+    customFields: settings.customFields,
+    account: settings.account,
   };
 
   const listeners: Array<(identity: TAtlasSupportIdentity) => void> = [];
 
-  function identify(identity: TAtlasSupportIdentity) {
+  function updateIdentityState(identity: TAtlasSupportIdentity) {
     userIdentity = Object.assign({}, identity);
     listeners.forEach((listener) => listener(userIdentity));
   }
 
-  if (!userIdentity.userId) {
+  function identify(identity: TAtlasSupportIdentity) {
+    updateIdentityState(identity);
+    if (identity.userId || identity.atlasId) {
+      updateIdentity({
+        ...identity,
+        appId: settings.appId,
+      } as TIdentityDetails);
+    }
+  }
+
+  if (userIdentity.userId) {
+    identify(userIdentity);
+  } else {
     AsyncStorage.getItem(asyncStorageAtlasIdKey).then((atlasId) => {
       if (userIdentity.userId) return;
-      identify({ atlasId: atlasId ?? undefined });
+      identify({ ...userIdentity, atlasId: atlasId ?? undefined });
     });
   }
 
@@ -76,7 +97,7 @@ export function createAtlasSupportSDK(
     const handleChangeIdentity = React.useCallback(
       (newIdentity: { atlasId: string }) => {
         AsyncStorage.setItem(asyncStorageAtlasIdKey, newIdentity.atlasId);
-        identify(newIdentity);
+        updateIdentityState(newIdentity);
         onChangeIdentity?.(newIdentity);
         settings.onChangeIdentity?.(newIdentity);
       },
@@ -169,6 +190,9 @@ export type TAtlasSupportIdentity = {
   userHash?: string;
   userName?: string;
   userEmail?: string;
+  customFields?: TCustomerFields;
+  fields?: Partial<TCustomerFields>;
+  account?: Partial<TAccountFields>;
 };
 
 export type {
