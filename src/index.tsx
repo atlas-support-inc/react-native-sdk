@@ -40,13 +40,23 @@ export function createAtlasSupportSDK(
 
   const listeners: Array<(identity: TAtlasSupportIdentity) => void> = [];
 
-  function updateIdentityState(identity: TAtlasSupportIdentity) {
+  /**
+   * @returns {boolean} False if identity has not changed
+   */
+  function updateIdentityState(identity: TAtlasSupportIdentity): boolean {
+    const hasChanges = (
+      Object.keys(identity) as Array<keyof typeof identity>
+    ).some((key) => identity[key] !== userIdentity[key]);
+    if (!hasChanges) return false;
+
     userIdentity = Object.assign({}, identity);
     listeners.forEach((listener) => listener(userIdentity));
+    return true;
   }
 
   function identify(identity: TAtlasSupportIdentity) {
-    updateIdentityState(identity);
+    if (!updateIdentityState(identity)) return;
+
     if (identity.userId || identity.atlasId) {
       updateIdentity({
         ...identity,
@@ -96,8 +106,9 @@ export function createAtlasSupportSDK(
 
     const handleChangeIdentity = React.useCallback(
       (newIdentity: { atlasId: string }) => {
+        if (!updateIdentityState(newIdentity)) return;
+
         AsyncStorage.setItem(asyncStorageAtlasIdKey, newIdentity.atlasId);
-        updateIdentityState(newIdentity);
         onChangeIdentity?.(newIdentity);
         settings.onChangeIdentity?.(newIdentity);
       },

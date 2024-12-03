@@ -79,7 +79,11 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
         } else if (message.type === 'atlas:newTicket') {
           newTicketCallbackRef.current?.({ ticketId: message.ticketId });
         } else if (message.type === 'atlas:changeIdentity') {
-          changeIdentityCallbackRef.current?.({ atlasId: message.atlasId });
+          changeIdentityCallbackRef.current?.({
+            atlasId: message.atlasId,
+            userId: message.userId,
+            userHash: message.userHash
+          });
         }
       } catch (error) {
         errorCallbackRef.current?.(
@@ -114,6 +118,8 @@ type TAtlasPacket =
   | {
       type: 'atlas:changeIdentity';
       atlasId: string;
+      userId: string;
+      userHash: string;
     };
 
 export type TAtlasSupportWidgetProps = ViewProps &
@@ -121,6 +127,6 @@ export type TAtlasSupportWidgetProps = ViewProps &
   TAtlasSupportIdentity & {
     atlasId?: string;
     onNewTicket?: (data: { ticketId: string }) => void;
-    onChangeIdentity?: (data: { atlasId: string }) => void;
+    onChangeIdentity?: (data: { atlasId: string, userId: string, userHash: string }) => void;
     onError?: (error: unknown) => void;
   };

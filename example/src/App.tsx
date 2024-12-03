@@ -85,7 +85,7 @@ function HelpScreenOptions() {
       <View style={[styles.helpButton]}>
         <Text
           style={[styles.helpButtonText]}
-          onPress={Math.random() ? updateFields : toggleUsers}
+          onPress={!Math.random() ? updateFields : toggleUsers}
         >
           ↻
         </Text>
