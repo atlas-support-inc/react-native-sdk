@@ -3,8 +3,12 @@ import { View, ViewProps } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import type { TAtlasSupportAppSettings, TAtlasSupportIdentity } from '.';
 import { ATLAS_WIDGET_BASE_URL } from './_config';
+import { version } from '../package.json';
+
+const sdkVersion = `react-native@${version}`;
 
 const buildWidgetUrl = (
+  sdkVersion: string,
   appId: string,
   atlasId?: string,
   userId?: string,
@@ -13,6 +17,7 @@ const buildWidgetUrl = (
   userEmail?: string
 ) => {
   const params = [
+    ['sdkVersion', sdkVersion],
     ['appId', appId],
     ['atlasId', atlasId],
     ['userId', userId],
@@ -48,6 +53,7 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
   const webViewSource = React.useMemo(
     () => ({
       uri: buildWidgetUrl(
+        sdkVersion,
         appId,
         atlasId,
         userId,
