@@ -3,7 +3,7 @@ import { connectCustomer } from './_connect-customer';
 import {
   loadConversations,
   MessageSide,
-  TConversation,
+  type TConversation,
 } from './_load-conversations';
 import { updateIdentity } from './_updateIdentity';
 import { safeJsonParse } from './_safe-json-parse';

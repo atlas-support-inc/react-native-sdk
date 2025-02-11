@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, ViewProps } from 'react-native';
-import WebView, { WebViewMessageEvent } from 'react-native-webview';
+import { View, type ViewProps } from 'react-native';
+import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 import type { TAtlasSupportAppSettings, TAtlasSupportIdentity } from '.';
 import { ATLAS_WIDGET_BASE_URL } from './_config';
 import { version } from '../package.json';
