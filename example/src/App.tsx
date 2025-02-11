@@ -25,22 +25,24 @@ function HomeScreenOptions({ navigation }: any) {
 
   return {
     headerRight: () => (
-      <View
-        style={[
-          styles.helpButton,
-          newMessages ? styles.helpButtonNotificationState : null,
-        ]}
-      >
-        <Text
+      <TouchableOpacity style={styles.helpButton} onPress={toggleUsers}>
+        <View
           style={[
-            styles.helpButtonText,
-            newMessages ? styles.helpButtonTextNotificationState : null,
+            styles.helpButton,
+            newMessages ? styles.helpButtonNotificationState : null,
           ]}
-          onPress={() => navigation.navigate('Help')}
         >
-          {newMessages || '?'}
-        </Text>
-      </View>
+          <Text
+            style={[
+              styles.helpButtonText,
+              newMessages ? styles.helpButtonTextNotificationState : null,
+            ]}
+            onPress={() => navigation.navigate('Help')}
+          >
+            {newMessages || '?'}
+          </Text>
+        </View>
+      </TouchableOpacity>
     ),
   };
 }
