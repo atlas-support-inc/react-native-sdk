@@ -3,6 +3,7 @@ import { connectCustomer } from './_connect-customer';
 import {
   loadConversations,
   MessageSide,
+  ConversationStatus,
   type TConversation,
 } from './_load-conversations';
 import { updateIdentity } from './_updateIdentity';
@@ -22,7 +23,7 @@ const getConversationStats = (conversation: TConversation) => {
   return {
     id: conversation.id,
     unread,
-    closed: Boolean(conversation.closed),
+    closed: conversation.status === ConversationStatus.CLOSED,
   };
 };
 
