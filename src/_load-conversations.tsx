@@ -34,10 +34,17 @@ export enum MessageSide {
   BOT = 3,
 }
 
+export enum ConversationStatus {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+  SNOOZED = 'SNOOZED',
+  PENDING = 'PENDING',
+}
+
 export type TConversationMessage = { read?: boolean; side: MessageSide };
 
 export type TConversation = {
   id: string;
-  closed?: boolean;
+  status?: ConversationStatus;
   messages: TConversationMessage[];
 };
