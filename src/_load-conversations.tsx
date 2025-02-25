@@ -41,10 +41,16 @@ export enum ConversationStatus {
   PENDING = 'PENDING',
 }
 
-export type TConversationMessage = { read?: boolean; side: MessageSide };
+export type TConversationMessage = {
+  conversationId: string;
+  read?: boolean;
+  side: MessageSide;
+  text: string;
+};
 
 export type TConversation = {
   id: string;
   status?: ConversationStatus;
   messages: TConversationMessage[];
+  lastMessage?: TConversationMessage;
 };
