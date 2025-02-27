@@ -1,13 +1,14 @@
 import type { TAtlasSupportIdentity } from '.';
 import { connectCustomer } from './_connect-customer';
 import {
+  ConversationStatus,
   loadConversations,
   MessageSide,
-  ConversationStatus,
   type TConversation,
+  type TConversationMessage,
 } from './_load-conversations';
-import { updateIdentity } from './_updateIdentity';
 import { safeJsonParse } from './_safe-json-parse';
+import { updateIdentity } from './_updateIdentity';
 
 const getConversationStats = (conversation: TConversation) => {
   const unread =
@@ -24,6 +25,11 @@ const getConversationStats = (conversation: TConversation) => {
     id: conversation.id,
     unread,
     closed: conversation.status === ConversationStatus.CLOSED,
+    lastMessage: conversation.lastMessage && {
+      read: conversation.lastMessage.read,
+      side: conversation.lastMessage.side,
+      text: conversation.lastMessage.text,
+    },
   };
 };
 
@@ -113,7 +119,7 @@ export function watchAtlasSupportStats(
             }
 
             case 'CHATBOT_WIDGET_RESPONSE': {
-              const message = safeJsonParse<{ conversationId: string }>(
+              const message = safeJsonParse<TConversationMessage>(
                 data.payload.message as string
               );
               if (!message) return;
@@ -127,6 +133,11 @@ export function watchAtlasSupportStats(
                   id: message.conversationId,
                   unread: 1,
                   closed: false,
+                  lastMessage: {
+                    read: false,
+                    side: message.side,
+                    text: message.text,
+                  },
                 });
               }
               listener(stats);
@@ -155,8 +166,21 @@ export function watchAtlasSupportStats(
   };
 }
 
+type TConversationStatsLastMessage = {
+  read?: boolean;
+  side: MessageSide;
+  text: string;
+};
+
+type TConversationStats = {
+  id: string;
+  unread: number;
+  closed: boolean;
+  lastMessage?: TConversationStatsLastMessage;
+};
+
 export type TAtlasSupportStats = {
-  conversations: Array<{ id: string; closed: boolean; unread: number }>;
+  conversations: Array<TConversationStats>;
 };
 
 export type TAtlasSupportListener = (stats: TAtlasSupportStats) => void;
