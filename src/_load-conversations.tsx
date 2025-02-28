@@ -46,6 +46,7 @@ export type TConversationMessage = {
   read?: boolean;
   side: MessageSide;
   text: string;
+  plainText?: string;
 };
 
 export type TConversation = {
