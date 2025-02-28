@@ -10,6 +10,11 @@ import {
 import { safeJsonParse } from './_safe-json-parse';
 import { updateIdentity } from './_updateIdentity';
 
+const getTextPreview = (text: string) => {
+  if (text.length <= 100) return text;
+  return text.substring(0, 100) + '...';
+};
+
 const getConversationStats = (conversation: TConversation) => {
   const unread =
     conversation.messages?.reduce(
@@ -29,6 +34,7 @@ const getConversationStats = (conversation: TConversation) => {
       read: conversation.lastMessage.read,
       side: conversation.lastMessage.side,
       text: conversation.lastMessage.text,
+      preview: getTextPreview(conversation.lastMessage.plainText || ''),
     },
   };
 };
@@ -137,6 +143,7 @@ export function watchAtlasSupportStats(
                     read: false,
                     side: message.side,
                     text: message.text,
+                    preview: getTextPreview(message.plainText || ''),
                   },
                 });
               }
@@ -170,6 +177,7 @@ type TConversationStatsLastMessage = {
   read?: boolean;
   side: MessageSide;
   text: string;
+  preview?: string;
 };
 
 type TConversationStats = {
