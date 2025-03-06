@@ -54,4 +54,5 @@ export type TConversation = {
   status?: ConversationStatus;
   messages: TConversationMessage[];
   lastMessage?: TConversationMessage;
+  subject: string | null;
 };
