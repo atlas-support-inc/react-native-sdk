@@ -105,6 +105,7 @@ export function watchAtlasSupportStats(
               break;
             }
 
+            case 'CLIENT_MESSAGE':
             case 'AGENT_MESSAGE':
             case 'BOT_MESSAGE': {
               const conversation = safeJsonParse<TConversation>(
