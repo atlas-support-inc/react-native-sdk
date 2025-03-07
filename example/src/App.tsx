@@ -99,12 +99,13 @@ function HelpScreenOptions() {
 function HelpScreen() {
   return (
     <SafeAreaView style={styles.helpPage}>
-      <sdk.AtlasSupportWidget
-        style={styles.chat}
-        onNewTicket={listenNewTicketCallback}
-        enableKeyboardAvoidingView
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 104 : /* 160 */ 195}
-      />
+<sdk.AtlasSupportWidget
+  style={styles.chat}
+  onNewTicket={listenNewTicketCallback}
+  enableKeyboardAvoidingView
+  keyboardAvoidingViewBehavior="padding"
+  keyboardVerticalOffset={Platform.OS === 'ios' ? 104 : /* 160 */ 195}
+/>
     </SafeAreaView>
   );
 }

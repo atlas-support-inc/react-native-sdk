@@ -187,6 +187,7 @@ export type TCreateAtlasSupportSDKProps = {
 
 export type TSDKAtlasSupportWidgetProps = ViewProps & {
   enableKeyboardAvoidingView?: boolean;
+  keyboardAvoidingViewBehavior?: 'height' | 'position' | 'padding';
   keyboardVerticalOffset?: number;
   onNewTicket?: (data: { ticketId: string }) => void;
   onChangeIdentity?: (data: { atlasId: string }) => void;
