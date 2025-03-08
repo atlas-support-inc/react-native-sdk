@@ -1,5 +1,12 @@
 import * as React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, SafeAreaView, Platform } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  SafeAreaView,
+  Platform,
+} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import sdk, { user, userSecond } from './atlas';
@@ -99,13 +106,13 @@ function HelpScreenOptions() {
 function HelpScreen() {
   return (
     <SafeAreaView style={styles.helpPage}>
-<sdk.AtlasSupportWidget
-  style={styles.chat}
-  onNewTicket={listenNewTicketCallback}
-  enableKeyboardAvoidingView
-  keyboardAvoidingViewBehavior="padding"
-  keyboardVerticalOffset={Platform.OS === 'ios' ? 104 : /* 160 */ 195}
-/>
+      <sdk.AtlasSupportWidget
+        style={styles.chat}
+        onNewTicket={listenNewTicketCallback}
+        enableKeyboardAvoidingView
+        keyboardAvoidingViewBehavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 104 : /* 160 */ 195}
+      />
     </SafeAreaView>
   );
 }

@@ -108,8 +108,10 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
       {...viewProps}
       enabled={enableKeyboardAvoidingView}
       behavior={
-        keyboardAvoidingViewBehavior ??
-        (Platform.OS === 'ios' ? 'padding' : 'height')
+        enableKeyboardAvoidingView
+          ? keyboardAvoidingViewBehavior ??
+            (Platform.OS === 'ios' ? 'padding' : 'height')
+          : undefined
       }
       keyboardVerticalOffset={keyboardVerticalOffset}
     >
