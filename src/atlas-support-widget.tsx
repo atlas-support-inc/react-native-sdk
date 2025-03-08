@@ -1,5 +1,10 @@
 import React from 'react';
-import { type ViewProps, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  type ViewProps,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+} from 'react-native';
 import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 import type { TAtlasSupportAppSettings, TAtlasSupportIdentity } from '.';
 import { ATLAS_WIDGET_BASE_URL } from './_config';
@@ -103,26 +108,36 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
     [errorCallbackRef]
   );
 
-  return (
-    <KeyboardAvoidingView
-      {...viewProps}
-      enabled={enableKeyboardAvoidingView}
-      behavior={
-        enableKeyboardAvoidingView
-          ? keyboardAvoidingViewBehavior ??
-            (Platform.OS === 'ios' ? 'padding' : 'height')
-          : undefined
-      }
-      keyboardVerticalOffset={keyboardVerticalOffset}
-    >
-      <WebView
-        source={webViewSource}
-        javaScriptEnabled
-        domStorageEnabled
-        onMessage={handleMessage}
-      />
-    </KeyboardAvoidingView>
-  );
+  if (enableKeyboardAvoidingView) {
+    return (
+      <KeyboardAvoidingView
+        {...viewProps}
+        behavior={
+          keyboardAvoidingViewBehavior ??
+          (Platform.OS === 'ios' ? 'padding' : 'height')
+        }
+        keyboardVerticalOffset={keyboardVerticalOffset}
+      >
+        <WebView
+          source={webViewSource}
+          javaScriptEnabled
+          domStorageEnabled
+          onMessage={handleMessage}
+        />
+      </KeyboardAvoidingView>
+    );
+  } else {
+    return (
+      <View {...viewProps}>
+        <WebView
+          source={webViewSource}
+          javaScriptEnabled
+          domStorageEnabled
+          onMessage={handleMessage}
+        />
+      </View>
+    );
+  }
 }
 
 type TAtlasPacket =
