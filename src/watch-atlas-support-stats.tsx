@@ -15,7 +15,7 @@ const getTextPreview = (text: string) => {
   return text.substring(0, 100) + '...';
 };
 
-const getConversationStats = (conversation: TConversation) => {
+const getConversationStats = (conversation: TConversation): TConversationStats => {
   const unread =
     conversation.messages?.reduce(
       (accUnread: number, message) =>
@@ -30,6 +30,7 @@ const getConversationStats = (conversation: TConversation) => {
     id: conversation.id,
     unread,
     closed: conversation.status === ConversationStatus.CLOSED,
+    subject: conversation.subject,
     lastMessage: conversation.lastMessage && {
       read: conversation.lastMessage.read,
       side: conversation.lastMessage.side,
@@ -105,6 +106,7 @@ export function watchAtlasSupportStats(
               break;
             }
 
+            case 'CLIENT_MESSAGE':
             case 'AGENT_MESSAGE':
             case 'BOT_MESSAGE': {
               const conversation = safeJsonParse<TConversation>(
@@ -139,6 +141,7 @@ export function watchAtlasSupportStats(
                   id: message.conversationId,
                   unread: 1,
                   closed: false,
+                  subject: null,
                   lastMessage: {
                     read: false,
                     side: message.side,
@@ -184,6 +187,7 @@ type TConversationStats = {
   id: string;
   unread: number;
   closed: boolean;
+  subject: string | null;
   lastMessage?: TConversationStatsLastMessage;
 };
 
