@@ -53,6 +53,15 @@ export type TConversation = {
   id: string;
   status?: ConversationStatus;
   messages: TConversationMessage[];
-  lastMessage?: TConversationMessage;
+  last_message?: TConversationMessage;
   subject: string | null;
+  custom_fields?: Record<string, TJsonValue>;
 };
+
+export type TJsonValue =
+  | null
+  | string
+  | number
+  | boolean
+  | { [x: string]: TJsonValue }
+  | TJsonValue[];
