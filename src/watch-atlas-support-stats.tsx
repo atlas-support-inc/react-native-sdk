@@ -2,7 +2,6 @@ import type { TAtlasSupportIdentity } from '.';
 import { connectCustomer } from './_connect-customer';
 import {
   ConversationStatus,
-  loadConversations,
   MessageSide,
   type TConversation,
   type TConversationMessage,
@@ -34,12 +33,12 @@ const getConversationStats = (
     unread,
     closed: conversation.status === ConversationStatus.CLOSED,
     subject: conversation.subject,
-    customFields: conversation.custom_fields ?? {},
-    lastMessage: conversation.last_message && {
-      read: conversation.last_message.read,
-      side: conversation.last_message.side,
-      text: conversation.last_message.text,
-      preview: getTextPreview(conversation.last_message.plainText || ''),
+    customFields: conversation.customFields ?? {},
+    lastMessage: conversation.lastMessage && {
+      read: conversation.lastMessage.read,
+      side: conversation.lastMessage.side,
+      text: conversation.lastMessage.text,
+      preview: getTextPreview(conversation.lastMessage.plainText || ''),
     },
   };
 };
@@ -66,18 +65,9 @@ export function watchAtlasSupportStats(
     : Promise.reject(null)
   )
     .then((atlasId) => {
-      if (killed) return Promise.reject(null);
-      return loadConversations(atlasId, identity.userHash).then(
-        (conversations) => [atlasId, conversations] as const
-      );
-    })
-    .then(([atlasId, conversations]) => {
       if (killed) return;
 
-      const stats: TAtlasSupportStats = {
-        conversations: conversations.map(getConversationStats),
-      };
-      listener(stats);
+      const stats: TAtlasSupportStats = { conversations: [] };
 
       const updateConversationStats = (conversation: TConversation) => {
         const conversationStats = getConversationStats(conversation);
