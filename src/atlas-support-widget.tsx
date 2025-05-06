@@ -1,5 +1,10 @@
 import React from 'react';
-import { View, type ViewProps } from 'react-native';
+import {
+  type ViewProps,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+} from 'react-native';
 import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 import type { TAtlasSupportAppSettings, TAtlasSupportIdentity } from '.';
 import { ATLAS_WIDGET_BASE_URL } from './_config';
@@ -44,6 +49,9 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
     userHash,
     userEmail,
     userName,
+    enableKeyboardAvoidingView,
+    keyboardAvoidingViewBehavior,
+    keyboardVerticalOffset,
     onNewTicket,
     onChangeIdentity,
     onError,
@@ -88,7 +96,7 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
           changeIdentityCallbackRef.current?.({
             atlasId: message.atlasId,
             userId: message.userId,
-            userHash: message.userHash
+            userHash: message.userHash,
           });
         }
       } catch (error) {
@@ -100,16 +108,36 @@ export function AtlasSupportWidget(props: TAtlasSupportWidgetProps) {
     [errorCallbackRef]
   );
 
-  return (
-    <View {...viewProps}>
-      <WebView
-        source={webViewSource}
-        javaScriptEnabled
-        domStorageEnabled
-        onMessage={handleMessage}
-      />
-    </View>
-  );
+  if (enableKeyboardAvoidingView) {
+    return (
+      <KeyboardAvoidingView
+        {...viewProps}
+        behavior={
+          keyboardAvoidingViewBehavior ??
+          (Platform.OS === 'ios' ? 'padding' : 'height')
+        }
+        keyboardVerticalOffset={keyboardVerticalOffset}
+      >
+        <WebView
+          source={webViewSource}
+          javaScriptEnabled
+          domStorageEnabled
+          onMessage={handleMessage}
+        />
+      </KeyboardAvoidingView>
+    );
+  } else {
+    return (
+      <View {...viewProps}>
+        <WebView
+          source={webViewSource}
+          javaScriptEnabled
+          domStorageEnabled
+          onMessage={handleMessage}
+        />
+      </View>
+    );
+  }
 }
 
 type TAtlasPacket =
@@ -132,7 +160,14 @@ export type TAtlasSupportWidgetProps = ViewProps &
   TAtlasSupportAppSettings &
   TAtlasSupportIdentity & {
     atlasId?: string;
+    enableKeyboardAvoidingView?: boolean;
+    keyboardAvoidingViewBehavior?: 'height' | 'position' | 'padding';
+    keyboardVerticalOffset?: number;
     onNewTicket?: (data: { ticketId: string }) => void;
-    onChangeIdentity?: (data: { atlasId: string, userId: string, userHash: string }) => void;
+    onChangeIdentity?: (data: {
+      atlasId: string;
+      userId: string;
+      userHash: string;
+    }) => void;
     onError?: (error: unknown) => void;
   };

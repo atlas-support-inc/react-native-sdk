@@ -86,7 +86,7 @@ export function createAtlasSupportSDK(
       };
     }, []);
 
-    const { onError, onNewTicket, onChangeIdentity } = props;
+    const { onError, onNewTicket, onChangeIdentity, ...widgetProps } = props;
 
     const handleError = React.useCallback(
       (error: unknown) => {
@@ -117,7 +117,7 @@ export function createAtlasSupportSDK(
 
     return (
       <Widget
-        {...props}
+        {...widgetProps}
         appId={settings.appId}
         atlasId={identity.atlasId}
         userId={identity.userId}
@@ -186,6 +186,9 @@ export type TCreateAtlasSupportSDKProps = {
 } & Partial<Omit<TAtlasSupportIdentity, 'atlasId'>>;
 
 export type TSDKAtlasSupportWidgetProps = ViewProps & {
+  enableKeyboardAvoidingView?: boolean;
+  keyboardAvoidingViewBehavior?: 'height' | 'position' | 'padding';
+  keyboardVerticalOffset?: number;
   onNewTicket?: (data: { ticketId: string }) => void;
   onChangeIdentity?: (data: { atlasId: string }) => void;
   onError?: (error: unknown) => void;
