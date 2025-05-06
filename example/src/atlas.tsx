@@ -27,7 +27,7 @@ const atlasSupportSDK = createAtlasSupportSDK({
   appId,
   ...user,
   onNewTicket: console.log.bind(console, 'onNewTicket (global)'),
-  onChangeIdentity: console.log.bind(console, 'onChangeIdentity (global)'), 
+  onChangeIdentity: console.log.bind(console, 'onChangeIdentity (global)'),
   onError: console.log.bind(console, 'onError (global)'),
 });
 

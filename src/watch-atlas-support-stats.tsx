@@ -2,10 +2,10 @@ import type { TAtlasSupportIdentity } from '.';
 import { connectCustomer } from './_connect-customer';
 import {
   ConversationStatus,
-  loadConversations,
   MessageSide,
   type TConversation,
   type TConversationMessage,
+  type TJsonValue,
 } from './_load-conversations';
 import { safeJsonParse } from './_safe-json-parse';
 import { updateIdentity } from './_updateIdentity';
@@ -15,7 +15,9 @@ const getTextPreview = (text: string) => {
   return text.substring(0, 100) + '...';
 };
 
-const getConversationStats = (conversation: TConversation): TConversationStats => {
+const getConversationStats = (
+  conversation: TConversation
+): TConversationStats => {
   const unread =
     conversation.messages?.reduce(
       (accUnread: number, message) =>
@@ -31,6 +33,7 @@ const getConversationStats = (conversation: TConversation): TConversationStats =
     unread,
     closed: conversation.status === ConversationStatus.CLOSED,
     subject: conversation.subject,
+    customFields: conversation.customFields ?? {},
     lastMessage: conversation.lastMessage && {
       read: conversation.lastMessage.read,
       side: conversation.lastMessage.side,
@@ -62,18 +65,9 @@ export function watchAtlasSupportStats(
     : Promise.reject(null)
   )
     .then((atlasId) => {
-      if (killed) return Promise.reject(null);
-      return loadConversations(atlasId, identity.userHash).then(
-        (conversations) => [atlasId, conversations] as const
-      );
-    })
-    .then(([atlasId, conversations]) => {
       if (killed) return;
 
-      const stats: TAtlasSupportStats = {
-        conversations: conversations.map(getConversationStats),
-      };
-      listener(stats);
+      const stats: TAtlasSupportStats = { conversations: [] };
 
       const updateConversationStats = (conversation: TConversation) => {
         const conversationStats = getConversationStats(conversation);
@@ -90,6 +84,7 @@ export function watchAtlasSupportStats(
       };
 
       unsubscribe = connectCustomer(
+        appId,
         atlasId,
         (packet: string) => {
           const data = safeJsonParse<{
@@ -148,6 +143,7 @@ export function watchAtlasSupportStats(
                     text: message.text,
                     preview: getTextPreview(message.plainText || ''),
                   },
+                  customFields: {},
                 });
               }
               listener(stats);
@@ -161,8 +157,19 @@ export function watchAtlasSupportStats(
               listener(stats);
               break;
             }
+
+            case 'REFRESH_DATA': {
+              if (!Array.isArray(data.payload.conversations)) break;
+              stats.conversations =
+                data.payload.conversations.map(getConversationStats);
+
+              listener(stats);
+              break;
+            }
           }
         },
+        identity.userId,
+        identity.userHash,
         onError
       );
     })
@@ -189,6 +196,7 @@ type TConversationStats = {
   closed: boolean;
   subject: string | null;
   lastMessage?: TConversationStatsLastMessage;
+  customFields: Record<string, TJsonValue>;
 };
 
 export type TAtlasSupportStats = {

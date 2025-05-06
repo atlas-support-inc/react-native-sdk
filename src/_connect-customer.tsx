@@ -1,11 +1,15 @@
 import { ATLAS_WS_BASE_URL } from './_config';
 
 export function connectCustomer(
+  appId: string,
   atlasId: string,
   listener: (message: string) => void,
+  userId?: string,
+  userHash?: string,
   onError?: (error: unknown) => void
 ): () => void {
   let killed = false;
+  let synced = false;
   let ws: WebSocket | null = null;
 
   const kill = () => {
@@ -16,7 +20,7 @@ export function connectCustomer(
   let reconnectDelay = 1e3;
 
   const connect = () => {
-    ws = new WebSocket(`${ATLAS_WS_BASE_URL}/ws/CUSTOMER::${atlasId}`);
+    ws = new WebSocket(`${ATLAS_WS_BASE_URL}/ws/CUSTOMER::${atlasId}/${appId}`);
 
     ws.onopen = () => {
       reconnectDelay = 1e3;
@@ -31,7 +35,10 @@ export function connectCustomer(
           channel_id: atlasId,
           channel_kind: 'CUSTOMER',
           packet_type: 'SUBSCRIBE',
-          payload: {},
+          payload: {
+            ...(userId && { userId }),
+            ...(userHash && { userHash }),
+          },
         })
       );
     };
@@ -40,6 +47,18 @@ export function connectCustomer(
       if (killed) {
         kill();
         return;
+      }
+
+      if (!synced) {
+        synced = true;
+        ws?.send(
+          JSON.stringify({
+            channel_id: atlasId,
+            channel_kind: 'CUSTOMER',
+            packet_type: 'FETCH_DATA',
+            payload: { data: ['conversations'] },
+          })
+        );
       }
 
       listener(event.data);
