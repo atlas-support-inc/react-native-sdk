@@ -1,6 +1,7 @@
 import { ATLAS_API_BASE_URL } from './_config';
 
-export function loadConversations(
+// Not in use, might be deleted
+export function _loadConversations(
   atlasId: string,
   userHash?: string
 ): Promise<TConversation[]> {
@@ -55,4 +56,13 @@ export type TConversation = {
   messages: TConversationMessage[];
   lastMessage?: TConversationMessage;
   subject: string | null;
+  customFields?: Record<string, TJsonValue>;
 };
+
+export type TJsonValue =
+  | null
+  | string
+  | number
+  | boolean
+  | { [x: string]: TJsonValue }
+  | TJsonValue[];
